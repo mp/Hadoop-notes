@@ -1,0 +1,1 @@
+Monitors IT infrastructure and network services (SMTP, POP3, HTTP)

@@ -1,0 +1,1 @@
+Oozie is a job scheduler for managing Apache jobs.

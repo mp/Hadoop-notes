@@ -1,0 +1,3 @@
+Mapreduce2 is a framework for distributed processing of large data sets in parallel.
+Map function allows cluster to distribute work, reduce function brings multiple results into one output.
+Incorporates fault tolerence for multiple nodes on the cluster.

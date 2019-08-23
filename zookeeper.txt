@@ -1,0 +1,2 @@
+Creates an ensemble of znodes to allow concurrent writing and failover
+Creates a newly elected leader if one node fails

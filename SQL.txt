@@ -1,0 +1,92 @@
+-- HIVE (Hortonworks)
+
+-- ===========================
+-- Date Manipulation
+
+-- Convert String in format ddMMyyyy to timestamp
+from_unixtime(unix_timestamp(date_string,'ddMMyyyy')),
+
+-- convert timestamp to differently formatted string
+from_unixtime(unix_timestamp(timestamp_col), 'yyyy-MM-dd')
+
+-- Current Date
+from_unixtime(unix_timestamp()) as created_date
+
+-- Select everything from last 3 weeks
+where unix_timestamp(COL_NAME) > unix_timestamp() - (86400*21)
+
+-- Cast to a date type, e.g. field nc_record_type_start is in format '31-JUL-2011'
+, cast(to_date(from_unixtime(unix_timestamp(nc_record_type_start,'dd-MMM-yyyy'))) as date)
+
+-- age is less than 16
+if(datediff(from_unixtime(unix_timestamp()), dob)/365 < 16
+
+-- datediff
+src_extract_date = 2017-05-16 00:00:00.0
+assessmentperiodenddate = 2017-05-01 00:00:00.0
+datediff(src_extract_date, assessmentperiodenddate) = 15
+
+-- =================================
+-- Parsing Json
+
+-- Have a field that looks like this - 
+-- {"knowndate":"20150101","date":"20150101","type":"SPECIFIC_EFFECTIVE_DATE"}
+select v1.knowndate,stg.accepteddatetimeaccepted, stg.claimelementcontractid
+from ${hiveconf:ucds_bank} stg
+  lateral view json_tuple(stg.claimelementeffectivedate, 'knowndate', 'date', 'type') v1 as knowndate, date, type
+  
+-- =================================
+-- Word Distribution
+
+select w.ewords, count(*) freq
+from ( select ewords
+       from ( select split(regexp_replace(lower(a.declaredchildcareprovidersname),'[^a-z ]',''),' ') words
+              from ( select distinct declaredchildcareprovidersname
+                     from staging.stg_ucds_accepted_data_childcare_01 ) a
+            ) t
+       lateral view explode(words) sub as ewords
+     ) w
+where w.ewords is not null 
+and   not (w.ewords in ('','and','the','of', 'at'))
+group by w.ewords
+order by freq desc limit 200  
+
+-- =================================
+-- Get a random selection from a table
+-- See www.joefkelley.com/736/
+
+select * from staging.stg_address_match_address_detail_keyed
+distribute by rand()
+sort by rand()
+
+-- ============================
+-- Using Java Methods
+-- The java_method function in Hive allows methods from Java classes to be used.
+-- For example can use methods from the Apache Commons Libraries
+-- Examples
+
+-- To use DoubleMetaphone 
+SELECT first_name, 
+   java_method("org.apache.commons.codec.language.DoubleMetaphone","doubleMetaphone",first_name) 
+FROM ucds.ucds_person 
+LIMIT 20
+
+-- To use soundex
+SELECT first_name, 
+   java_method("org.apache.commons.codec.language.Soundex","encode",first_name) 
+FROM ucds.ucds_person 
+LIMIT 20
+
+-- Using refined soundex
+SELECT first_name, 
+   java_method("org.apache.commons.codec.language.RefinedSoundex","encode",first_name) 
+FROM ucds.ucds_person 
+LIMIT 20
+
+-- To use Levenshtein Edit Distance
+SELECT 
+first_name, 
+surname, 
+java_method("org.apache.commons.lang.StringUtils", "getLevenshteinDistance", first_name, surname) 
+FROM ucds.ucds_person 
+LIMIT 20;

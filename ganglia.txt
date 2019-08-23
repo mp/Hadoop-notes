@@ -1,0 +1,1 @@
+Ganglia: distributed monitoring service for clusters. Gmond multi-threaded daemon runs on each cluster node (CPU utilisation over last week).

@@ -1,0 +1,1 @@
+Yet Another Resource Negotiator: Splits resource management, job scheduling and monitoring to run multiple servers to full capacity instead of one for a specific task.
